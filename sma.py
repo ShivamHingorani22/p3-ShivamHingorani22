@@ -29,6 +29,9 @@ parser.add_argument('--period', '-p',
                     help='data period to analyze stock', default='1y')
 parser.add_argument('--window', '-w',
                     help='number of periods in moving average', default=20)
+parser.add_argument('--consumer', '-c',
+                    choices=['human', 'machine'],
+                    help='consumer for whom to format output', default='human')
 
 args = vars(parser.parse_args())
 
@@ -37,9 +40,13 @@ pprint.pprint(args)
 symbol = args['symbol']
 period = args['period']
 window = int(args['window'])
+consumer = args['consumer']
 
 data = yf.download(symbol, period=period)
 data['sma'] = data['Close'].rolling(window=window).mean()
 
 sma_name = '{} period SMA'.format(window)
-chart(data, symbol, sma_name=sma_name)
+if consumer == "machine":
+    data.to_csv('{}–{}.csv'.format(symbol, sma_name))
+else:
+    chart(data, symbol, sma_name=sma_name)
